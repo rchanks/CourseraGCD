@@ -104,4 +104,6 @@ ttidy <- ttidy %>%
 
 # Write out tidy data set to file
 write.csv(ttidy, "tidy_data.csv", row.names = FALSE)
+write.table(ttidy, "tidy_data.txt", row.name = FALSE)
+
 
