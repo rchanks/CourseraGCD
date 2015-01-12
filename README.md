@@ -20,7 +20,8 @@ This analysis was to create a tidy data set using the UCI HAR (Human Activity Re
 
 ## Variables and Transformations
 All variables and tranformations are detailed in the CodeBook.Rmd with descriptions
-of each block of code.
+of each block of code.  Please refer to the CodeBook file for description of what is 
+being done by the R code.
 
 
 
