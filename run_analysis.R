@@ -4,10 +4,12 @@
 # 
 # You should create one R script called run_analysis.R that does the following. 
 #  1. Merges the training and the test sets to create one data set.
-#  2. Extracts only the measurements on the mean and standard deviation for each measurement. 
+#  2. Extracts only the measurements on the mean and standard deviation for 
+#     each measurement. 
 #  3. Uses descriptive activity names to name the activities in the data set
 #  4. Appropriately labels the data set with descriptive variable names. 
-#  5. From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject.
+#  5. From the data set in step 4, creates a second, independent tidy data 
+#     set with the average of each variable for each activity and each subject.
 #
 #########################################
 
@@ -21,7 +23,8 @@ library(tidyr)
 
 ### Step 1
 # Read in training data sets and apply initial column names
-features <- read.table("./data/UCI HAR Dataset/features.txt", stringsAsFactors = FALSE)
+features <- read.table("./data/UCI HAR Dataset/features.txt", 
+                       stringsAsFactors = FALSE)
 xtrn <- read.table("./data/UCI HAR Dataset/train/X_train.txt", nrows = 7352)
 colnames(xtrn) <- features$V2
 ytrn <- read.table("./data/UCI HAR Dataset/train/y_train.txt")
@@ -45,13 +48,15 @@ df <- rbind(test, train)
 ### Step 2
 # Filter columns to just the activity, subject, and measurement columns
 #          with mean and std (standard deviation) and call data frame skinny
-keepnames <- grepl("mean|std|Subject|Activity", colnames(df)) & !grepl("meanFreq", colnames(df))
+keepnames <- grepl("mean|std|Subject|Activity", colnames(df)) & 
+  !grepl("meanFreq", colnames(df))
 skinny <- df[, keepnames]
 
 ### Step 3
 # Change Activities from numeric to names
 # Load in activity names file and add appropriate column names prior to join
-activity_names <- read.table("./data/UCI HAR Dataset/activity_labels.txt", stringsAsFactors = FALSE)
+activity_names <- read.table("./data/UCI HAR Dataset/activity_labels.txt", 
+                             stringsAsFactors = FALSE)
 colnames(activity_names) <- c("Activity", "ActDesc")
 # Join activity names with skinny by Activity in each data frame
 skinny <- tbl_df(skinny)
