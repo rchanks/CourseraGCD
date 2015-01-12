@@ -1,0 +1,180 @@
+---
+title: "CodeBook"
+author: "rch"
+date: "Monday, January 12, 2015"
+output: html_document
+---
+
+#Codebook for Getting and Cleaning Data Course Project
+======================================================
+
+##Data
+This script is to take the UCI HAR (Human Activity Recognition 
+      using smart phones) Dataset and do the following things:
+Create one R script called run_analysis.R that does the following. 
+1. Merge the training and the test sets to create one data set.
+2. Extract only the measurements on the mean and standard deviation for each 
+  measurement. 
+3. Use descriptive activity names to name the activities in the data set
+4. Appropriately label the data set with descriptive variable names. 
+5. From the data set in step 4, create a second, independent tidy data set with 
+  the average of each variable for each activity and each subject.
+
+##Transformation Process and Variables
+###The following markdown documents the processes taken and the code used.
+
+Set the working directory to find the necessary files
+```{r}
+setwd("~/R_Files/Coursera_GettingCleaningData")
+```
+
+Load in the required libraries
+```{r}
+library(utils)
+library(dplyr)
+library(stringr)
+library(tidyr)
+```
+
+###Step 1
+Read in training data sets and apply initial column names
+```{r}
+features <- read.table("./data/UCI HAR Dataset/features.txt", 
+                       stringsAsFactors = FALSE)
+xtrn <- read.table("./data/UCI HAR Dataset/train/X_train.txt", nrows = 7352)
+colnames(xtrn) <- features$V2
+ytrn <- read.table("./data/UCI HAR Dataset/train/y_train.txt")
+colnames(ytrn) <- "Activity"
+strn <- read.table("./data/UCI HAR Dataset/train/subject_train.txt")
+colnames(strn) <- "Subject"
+train <- cbind(strn, ytrn, xtrn)
+```
+
+Read in test data sets and apply initial column names
+```{r}
+xtest <- read.table("./data/UCI HAR Dataset/test/X_test.txt", nrows = 2947)
+colnames(xtest) <- features$V2
+ytest <- read.table("./data/UCI HAR Dataset/test/y_test.txt")
+colnames(ytest) <- "Activity"
+stest <- read.table("./data/UCI HAR Dataset/test/subject_test.txt")
+colnames(stest) <- "Subject"
+test <- cbind(stest, ytest, xtest)
+```
+
+Combine both the train and test data sets into a single data frame
+```{r}
+df <- rbind(test, train)
+```
+
+###Step 2
+Filter columns to just the activity, subject, and measurement columns
+         with mean and std (standard deviation) and call data frame skinny
+```{r}
+keepnames <- grepl("mean|std|Subject|Activity", colnames(df)) & 
+  !grepl("meanFreq", colnames(df))
+skinny <- df[, keepnames]
+```
+
+###Step 3
+Change Activities from numeric to names
+Load in activity names file and add appropriate column names prior to join
+```{r}
+activity_names <- read.table("./data/UCI HAR Dataset/activity_labels.txt", 
+                             stringsAsFactors = FALSE)
+colnames(activity_names) <- c("Activity", "ActDesc")
+```
+
+Join activity names with skinny by Activity in each data frame
+```{r}
+skinny <- tbl_df(skinny)
+skinny <- inner_join(skinny, activity_names)
+```
+
+Reorder columns to move new activity names to first column 
+ and remove and rename Description as activity
+```{r}
+skinny <- skinny[,c(69, 2:68)]
+colnames(skinny)[1] <- "Activity"
+```
+
+###Step 4
+
+Rename variable names in skinny to make more sense and separate by "-"
+```{r}
+pracnames <- names(skinny)
+```
+
+Change Acc to acceleration
+```{r}
+pracnames <- str_replace_all(pracnames, "Acc", "-acceleration-")
+```
+
+Change Gyro to gyroscope
+```{r}
+pracnames <- str_replace_all(pracnames, "Gyro", "-gyroscope-")
+```
+
+Change Mag to magnitude
+```{r}
+pracnames <- str_replace_all(pracnames, "Mag", "-magnitude")
+```
+
+Remove ()
+```{r}
+pracnames <- str_replace_all(pracnames, "\\(\\)", "")
+```
+
+Change t at the beginning to time
+```{r}
+pracnames <- str_replace_all(pracnames, "^t", "time-")
+```
+
+Change f at the beginning to frequency
+```{r}
+pracnames <- str_replace_all(pracnames, "^f", "frequency-")
+```
+
+Replace tBody with time-body
+```{r}
+pracnames <- str_replace_all(pracnames, "tBody", "time-body-")
+```
+
+Replace BodyBody with body
+```{r}
+pracnames <- str_replace_all(pracnames, "BodyBody", "body")
+```
+
+Clean up by removing any "--" and change to "-"
+```{r}
+pracnames <- str_replace_all(pracnames, "--", "-")
+```
+
+Make all lower case
+```{r}
+pracnames <- tolower(pracnames)
+```
+
+Apply them to skinny data frame
+```{r}
+names(skinny) <- pracnames
+```
+
+###Step 5
+Use tidyr to gather measurements into tidy data (1 line per observation)
+```{r}
+ttidy <- skinny %>%
+  gather(sensor, Value, 3:68)
+```
+
+Use dplyr to summarize by subject and activity
+```{r}
+ttidy <- ttidy %>%
+  group_by(subject, activity)%>%
+  summarize(mean = mean(Value))
+```
+
+Write out tidy data set to file
+```{r}
+write.csv(ttidy, "tidy_data.csv", row.names = FALSE)
+```
+
