@@ -70,7 +70,7 @@ pracnames <- str_replace_all(pracnames, "Acc", "-acceleration-")
 pracnames <- str_replace_all(pracnames, "Gyro", "-gyroscope-")
 # Change Mag to magnitude
 pracnames <- str_replace_all(pracnames, "Mag", "-magnitude")
-# Remove ()
+# Remove () 
 pracnames <- str_replace_all(pracnames, "\\(\\)", "")
 # Change t at the beginning to time
 pracnames <- str_replace_all(pracnames, "^t", "time-")

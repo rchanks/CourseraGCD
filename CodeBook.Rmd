@@ -50,7 +50,7 @@ colnames(strn) <- "Subject"
 train <- cbind(strn, ytrn, xtrn)
 ```
 
-Read in test data sets and apply initial column names
+Read in test data sets and apply initial column names 
 ```{r}
 xtest <- read.table("./data/UCI HAR Dataset/test/X_test.txt", nrows = 2947)
 colnames(xtest) <- features$V2
